@@ -1,3 +1,17 @@
+if (not game:IsLoaded()) then
+    local loading = true
+    while (task.wait()) do
+        pcall(function()
+            local ReplicatedFirst = game:GetService("ReplicatedFirst")
+            if (ReplicatedFirst:IsFinishedReplicating() and game.Loaded and game:IsLoaded() and game:GetService("Players").LocalPlayer) then
+                loading = false
+            end
+        end)
+
+        if (not loading) then break end
+    end
+end
+
 local lib = loadstring(game:HttpGet"https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/Vape.txt")()
 local win = lib:Window("NIGHTMARE REWRITTEN",Color3.fromRGB(44, 120, 224), Enum.KeyCode.RightControl)
 
