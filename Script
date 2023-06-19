@@ -1,75 +1,73 @@
-local DiscordLib = loadstring(game:HttpGet"https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/discord%20lib.txt")()
+local lib = loadstring(game:HttpGet"https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/Vape.txt")()
+local win = lib:Window("NIGHTMARE REWRITTEN",Color3.fromRGB(44, 120, 224), Enum.KeyCode.RightControl)
 
-local win = DiscordLib:Window("discord library")
-
-local serv = win:Server("Preview", "")
-
-local btns = serv:Channel("Buttons")
-
-btns:Button("Kill all", function()
-DiscordLib:Notification("Notification", "Killed everyone!", "Okay!")
+local tab = win:Tab("Booth")
+local tab = win:Tab("Player")
+tab:Slider("WalkSpeed",16,100,0, function(t)
+game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = t
+end)
+tab:Slider("JumpPower",50,500,0, function(t)
+game.Players.LocalPlayer.Character.Humanoid.JumpPower = t
+end)
+tab:Slider("Hipheight",2,1000,0, function(t)
+game.Players.LocalPlayer.Character.Humanoid.HipHeight = t
+end)
+tab:Button("Sit", function()
+game.Players.LocalPlayer.Character.Humanoid.Sit = true
+end)
+tab:Button("Respawn", function()
+game.ReplicatedStorage.RequestRespawn:FireServer(true)
 end)
 
-btns:Seperator()
-
-btns:Button("Get max level", function()
-DiscordLib:Notification("Notification", "Max level!", "Okay!")
+local tab = win:Tab("Teleports")
+tab:Button("Spawn", function()
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-7.887119770050049, 3.1999998092651367, 4.925275802612305)
+end)
+tab:Button("Knight", function()
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-246.23175048828125, 2.513737201690674, -240.2903289794922)
+end)
+tab:Button("Premium Lounge", function()
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5899.99951171875, -54.00468063354492, 23.050809860229492)
+end)
+tab:Button("Top Rated Sign", function()
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-70.96351623535156, 18.9999942779541, -41.2108268737793)
+end)
+tab:Button("Shop", function()
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-62.04146194458008, 2.9925382137298584, 55.04872512817383)
+end)
+tab:Button("Admin Roof", function()
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5896.93505859375, -16.59215545654297, 40.63946533203125)
+end)
+tab:Button("Stage", function()
+lib:Notification("⚠ WARNING ⚠", "GROUP REQUIRED", "I Understand!")
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-83.11736297607422, 6.873104095458984, 7.748469829559326)
 end)
 
-local tgls = serv:Channel("Toggles")
+local tab = win:Tab("Items")
 
-tgls:Toggle("Auto-Farm",false, function(bool)
-print(bool)
+local tab = win:Tab("Knight")
+
+local tab = win:Tab("Rate")
+
+local tab = win:Tab("Blacklist")
+
+local tab = win:Tab("Options")
+tab:Button("Rejoin", function()
+local ts = game:GetService("TeleportService")
+local p = game:GetService("Players").LocalPlayer
+ts:Teleport(game.PlaceId, p)
+end)
+tab:Button("Anti Kill", function()
+game:GetService'Players'.LocalPlayer.Character['Right Arm']:Destroy()
+game:GetService'Players'.LocalPlayer.Character['Right Leg']:Destroy()
+game:GetService'Players'.LocalPlayer.Character['Right Upper Arm']:Destroy()
+game:GetService'Players'.LocalPlayer.Character['Right Lower Arm']:Destroy()
+game:GetService'Players'.LocalPlayer.Character['Right Hand']:Destroy()
 end)
 
-local sldrs = serv:Channel("Sliders")
-
-local sldr = sldrs:Slider("Slide me!", 0, 1000, 400, function(t)
-print(t)
-end)
-
-sldrs:Button("Change to 50", function()
-sldr:Change(50)
-end)
-
-local drops = serv:Channel("Dropdowns")
-
-
-local drop = drops:Dropdown("Pick me!",{"Option 1","Option 2","Option 3","Option 4","Option 5"}, function(bool)
-print(bool)
-end)
-
-drops:Button("Clear", function()
-drop:Clear()
-end)
-
-drops:Button("Add option", function()
-drop:Add("Option")
-end)
-
-local clrs = serv:Channel("Colorpickers")
-
-clrs:Colorpicker("ESP Color", Color3.fromRGB(255,1,1), function(t)
-print(t)
-end)
-
-local textbs = serv:Channel("Textboxes")
-
-textbs:Textbox("Gun power", "Type here!", true, function(t)
-print(t)
-end)
-
-local lbls = serv:Channel("Labels")
-
-lbls:Label("This is just a label.")
-
-local bnds = serv:Channel("Binds")
-
-bnds:Bind("Kill bind", Enum.KeyCode.RightShift, function()
-print("Killed everyone!")
-end)
-
-serv:Channel("by dawid#7205")
-
-
-win:Server("Main", "http://www.roblox.com/asset/?id=6031075938")
+game:GetService("StarterGui"):SetCore("SendNotification",{
+	Title = "NIGHTMARE REWRITTEN",
+	Text = "Successfuly Loaded",
+	Duration = 10;
+	Icon = "rbxassetid://13796707647"
+})
