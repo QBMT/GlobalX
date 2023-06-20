@@ -7,57 +7,284 @@ if (not game:IsLoaded()) then
                 loading = false
             end
         end)
-
         if (not loading) then break end
     end
 end
 
 local lib = loadstring(game:HttpGet"https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/Vape.txt")()
-local win = lib:Window("NIGHTMARE REWRITTEN",Color3.fromRGB(44, 120, 224), Enum.KeyCode.RightControl)
+local win = lib:Window("NIGHTMARE REWRITTEN",Color3.fromRGB(255, 0, 0), Enum.KeyCode.RightControl)
+local AkaliNotif = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/Dynissimo/main/Scripts/AkaliNotif.lua"))();
+local Notify = AkaliNotif.Notify;
 
 local tab = win:Tab("Booth")
+
 local tab = win:Tab("Player")
-tab:Slider("WalkSpeed",16,100,0, function(t)
-game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = t
+
+tab:Slider("WalkSpeed",16,1000,0, function(t)
+	game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = t
 end)
-tab:Slider("JumpPower",50,500,0, function(t)
-game.Players.LocalPlayer.Character.Humanoid.JumpPower = t
+
+tab:Slider("JumpPower",50,1000,0, function(t)
+	local Tz = game:GetService("Players")
+	local Tx = Tz.LocalPlayer.Character.Humanoid
+	Tx.UseJumpPower = true
+	Tx.JumpPower = t
 end)
-tab:Slider("Hipheight",2,1000,0, function(t)
-game.Players.LocalPlayer.Character.Humanoid.HipHeight = t
+
+tab:Slider("Hipheight",1,1000,0, function(t)
+	game.Players.LocalPlayer.Character.Humanoid.HipHeight = t
 end)
+
+local speed = 50
+local c
+local h
+local bv
+local bav
+local cam
+local flying
+local p = game.Players.LocalPlayer
+local buttons = {W = false, S = false, A = false, D = false, Moving = false}
+local startFly = function ()
+	if not p.Character or not p.Character.Head or flying then return end
+	c = p.Character
+	h = c.Humanoid
+	h.PlatformStand = true
+	cam = workspace:WaitForChild('Camera')
+	bv = Instance.new("BodyVelocity")
+	bav = Instance.new("BodyAngularVelocity")
+	bv.Velocity, bv.MaxForce, bv.P = Vector3.new(0, 0, 0), Vector3.new(10000, 10000, 10000), 1000
+	bav.AngularVelocity, bav.MaxTorque, bav.P = Vector3.new(0, 0, 0), Vector3.new(10000, 10000, 10000), 1000
+	bv.Parent = c.Head
+	bav.Parent = c.Head
+	flying = true
+	h.Died:connect(function() flying = false end)
+end
+local endFly = function ()
+	if not p.Character or not flying then return end
+	h.PlatformStand = false
+	bv:Destroy()
+	bav:Destroy()
+	flying = false
+end
+game:GetService("UserInputService").InputBegan:connect(function (input, GPE) 
+	if GPE then return end
+	for i, e in pairs(buttons) do
+		if i ~= "Moving" and input.KeyCode == Enum.KeyCode[i] then
+			buttons[i] = true
+			buttons.Moving = true
+		end
+	end
+end)
+game:GetService("UserInputService").InputEnded:connect(function (input, GPE) 
+	if GPE then return end
+	local a = false
+	for i, e in pairs(buttons) do
+		if i ~= "Moving" then
+			if input.KeyCode == Enum.KeyCode[i] then
+				buttons[i] = false
+			end
+			if buttons[i] then a = true end
+		end
+	end
+	buttons.Moving = a
+end)
+local setVec = function (vec)
+	return vec * (speed / vec.Magnitude)
+end
+game:GetService("RunService").Heartbeat:connect(function (step)
+	if flying and c and c.PrimaryPart then
+		local p = c.PrimaryPart.Position
+		local cf = cam.CFrame
+		local ax, ay, az = cf:toEulerAnglesXYZ()
+		c:SetPrimaryPartCFrame(CFrame.new(p.x, p.y, p.z) * CFrame.Angles(ax, ay, az))
+		if buttons.Moving then
+			local t = Vector3.new()
+			if buttons.W then t = t + (setVec(cf.lookVector)) end
+			if buttons.S then t = t - (setVec(cf.lookVector)) end
+			if buttons.A then t = t - (setVec(cf.rightVector)) end
+			if buttons.D then t = t + (setVec(cf.rightVector)) end
+			c:TranslateBy(t * step)
+		end
+	end
+end)
+
+tab:Toggle("Fly",false, function(state)
+    if state then
+           startFly()
+		    Notify({
+			Description = "Successfully Started Flying";
+			Title = "Alert";
+			Duration = 3;
+			});
+	else 
+	       endFly()
+		   Notify({
+			Description = "Successfully Stopped Flying";
+			Title = "Alert";
+			Duration = 3;
+			});
+		end
+    end)
+
 tab:Button("Sit", function()
-game.Players.LocalPlayer.Character.Humanoid.Sit = true
-end)
-tab:Button("Respawn", function()
-game.ReplicatedStorage.RequestRespawn:FireServer(true)
+	game.Players.LocalPlayer.Character.Humanoid.Sit = true
+	Notify({
+		Description = "Successfully Started Sitting";
+		Title = "Alert";
+		Duration = 3;
+		});
+end)	
+
+tab:Button("Reset 1 | Normal", function()
+	local Tz = game:GetService("Players")
+	local Tx = Tz.LocalPlayer.Character.Humanoid
+	Tx.Health = 0	
+	Notify({
+		Description = "Successful Reset";
+		Title = "Alert";
+		Duration = 3;
+		});
+	end)
+
+tab:Button("Reset 2 | Instantly Respawn", function()
+	game.ReplicatedStorage.RequestRespawn:FireServer(true)
+	Notify({
+		Description = "Successful Reset";
+		Title = "Alert";
+		Duration = 3;
+		});
 end)
 
 local tab = win:Tab("Teleports")
-tab:Button("Spawn", function()
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-7.887119770050049, 3.1999998092651367, 4.925275802612305)
+tab:Button("Spawn 📻", function()
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-7.887119770050049, 3.1999998092651367, 4.925275802612305)
+	Notify({
+		Description = "Successful Teleport | Spawn";
+		Title = "Alert";
+		Duration = 3;
+		});
 end)
-tab:Button("Knight", function()
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-246.23175048828125, 2.513737201690674, -240.2903289794922)
+
+tab:Button("Knight 🔪", function()
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-246.23175048828125, 2.513737201690674, -240.2903289794922)
+	Notify({
+		Description = "Successful Teleport | Knight";
+		Title = "Alert";
+		Duration = 3;
+		});
 end)
-tab:Button("Premium Lounge", function()
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5899.99951171875, -54.00468063354492, 23.050809860229492)
+
+tab:Button("Premium Lounge 🎫", function()
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5899.99951171875, -54.00468063354492, 23.050809860229492)
+	Notify({
+		Description = "Successful Teleport | Premium Lounge";
+		Title = "Alert";
+		Duration = 3;
+		});
 end)
-tab:Button("Top Rated Sign", function()
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-70.96351623535156, 18.9999942779541, -41.2108268737793)
+
+tab:Button("Top Rated Sign 🧨", function()
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-70.96351623535156, 18.9999942779541, -41.2108268737793)
+	Notify({
+		Description = "Successful Teleport | Top Rated Sign";
+		Title = "Alert";
+		Duration = 3;
+		});
 end)
-tab:Button("Shop", function()
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-62.04146194458008, 2.9925382137298584, 55.04872512817383)
+
+tab:Button("Shop 🛒", function()
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-62.04146194458008, 2.9925382137298584, 55.04872512817383)
+	Notify({
+		Description = "Successful Teleport | Shop";
+		Title = "Alert";
+		Duration = 3;
+		});
 end)
-tab:Button("Admin Roof", function()
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5896.93505859375, -16.59215545654297, 40.63946533203125)
+
+tab:Button("Admin Roof 👑", function()
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5896.93505859375, -16.59215545654297, 40.63946533203125)
+	Notify({
+		Description = "Successful Teleport | Admin Roof";
+		Title = "Alert";
+		Duration = 3;
+		});
 end)
-tab:Button("Stage", function()
-lib:Notification("⚠ WARNING ⚠", "GROUP REQUIRED", "I Understand!")
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-83.11736297607422, 6.873104095458984, 7.748469829559326)
+
+tab:Button("Stage 🎤", function()
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-83.11736297607422, 6.873104095458984, 7.748469829559326)
+	Notify({
+		Description = "⚠ WARNING ⚠ GROUP REQUIRED";
+		Title = "Alert";
+		Duration = 3;
+		});
 end)
 
 local tab = win:Tab("Items")
+
+local plrrr = game.Players.LocalPlayer
+local ownsGamepass1 = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plrrr.UserId, 17290248) --stop
+local ownsGamepass2 = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plrrr.UserId, 17291420) --text 
+local ownsGamepass3 = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plrrr.UserId, 17291427) --image
+
+ tab:Button("Image Sign 📷", function()
+    if ownsGamepass3 then
+        game.ReplicatedStorage.RequestGamepassTool:FireServer(17291427)
+        Notify({
+            Description = "Successfully Given";
+            Title = "Alert";
+            Duration = 3;
+            });
+     else
+        Notify({
+            Description = "Error please purchase the gamepass!";
+            Title = "Alert";
+            Duration = 3;
+            });
+     end
+end)
+
+tab:Button("Text Sign 💬", function()
+    if ownsGamepass2 then
+        game.ReplicatedStorage.RequestGamepassTool:FireServer(17291420)
+        Notify({
+            Description = "Successfully Given";
+            Title = "Alert";
+            Duration = 3;
+            });
+     else
+        Notify({
+            Description = "Error please purchase the gamepass!";
+            Title = "Alert";
+            Duration = 3;
+            });
+     end
+end)
+
+tab:Button("Stop Sign 🛑", function()
+    if ownsGamepass1 then
+        game.ReplicatedStorage.RequestGamepassTool:FireServer(17291427)
+        Notify({
+            Description = "Successfully Given";
+            Title = "Alert";
+            Duration = 3;
+            });
+     else
+        Notify({
+            Description = "Error please purchase the gamepass!";
+            Title = "Alert";
+            Duration = 3;
+            });
+     end
+end)
+
+tab:Button("F3X 🔨", function()
+	loadstring(game:GetObjects("rbxassetid://4698064966")[1].Source)()
+	Notify({
+		Description = "Successfully Given F3X";
+		Title = "Alert";
+		Duration = 3;
+		});
+end)
 
 local tab = win:Tab("Knight")
 
@@ -65,23 +292,84 @@ local tab = win:Tab("Rate")
 
 local tab = win:Tab("Blacklist")
 
-local tab = win:Tab("Options")
-tab:Button("Rejoin", function()
-local ts = game:GetService("TeleportService")
-local p = game:GetService("Players").LocalPlayer
-ts:Teleport(game.PlaceId, p)
-end)
-tab:Button("Anti Kill", function()
-game:GetService'Players'.LocalPlayer.Character['Right Arm']:Destroy()
-game:GetService'Players'.LocalPlayer.Character['Right Leg']:Destroy()
-game:GetService'Players'.LocalPlayer.Character['Right Upper Arm']:Destroy()
-game:GetService'Players'.LocalPlayer.Character['Right Lower Arm']:Destroy()
-game:GetService'Players'.LocalPlayer.Character['Right Hand']:Destroy()
+local option = win:Tab("Options")
+
+option:Colorpicker("Change UI Color 📱",Color3.fromRGB(255, 0, 0), function(t)
+	lib:ChangePresetColor(Color3.fromRGB(t.R * 255, t.G * 255, t.B * 255))
+	end)
+
+	option:Button("Anti Kill", function()
+		local humanoid = game.Players.LocalPlayer.Character.Humanoid
+		if humanoid.RigType == Enum.HumanoidRigType.R15 then
+			game:GetService'Players'.LocalPlayer.Character['RightLowerArm']:Destroy()
+			game:GetService'Players'.LocalPlayer.Character['RightHand']:Destroy()
+			game:GetService'Players'.LocalPlayer.Character['RightUpperArm']:Destroy()
+		else
+			game:GetService'Players'.LocalPlayer.Character['Right Arm']:Destroy()
+		end
+		Notify({
+			Description = "Successfully Enabled AntiKill";
+			Title = "Alert";
+			Duration = 3;
+			});
+	end)
+
+option:Toggle("Anti Afk",false, function(state)
+    if state then
+        _G.loop = true
+		Notify({
+			Description = "Anti Afk Enabled Successfully";
+			Title = "Alert";
+			Duration = 3;
+			});
+        while _G.loop == true do wait()
+            game:service'Players'.LocalPlayer.Idled:connect(function()
+            bb:CaptureController()bb:ClickButton2(Vector2.new())
+            end)
+        end
+    else
+        _G.loop = false
+		Notify({
+			Description = "Anti Afk Disabled Successfully";
+			Title = "Alert";
+			Duration = 3;
+			});
+        while _G.loop == true do wait()
+        end
+    end
 end)
 
-game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "NIGHTMARE REWRITTEN",
-	Text = "Successfuly Loaded",
-	Duration = 10;
-	Icon = "rbxassetid://13796707647"
-})
+option:Toggle("Night Mode",false, function(state)
+    if state then
+           game.Lighting.ClockTime = "4.5"
+		    Notify({
+			Description = "Time Set Night";
+			Title = "Alert";
+			Duration = 3;
+			});
+	else 
+	       game.Lighting.ClockTime = "8.81"
+		   Notify({
+			Description = "Time Set Day";
+			Title = "Alert";
+			Duration = 3;
+			});
+		end
+    end)
+
+option:Button("Rejoin", function()
+	local ts = game:GetService("TeleportService")
+	local p = game:GetService("Players").LocalPlayer
+	ts:Teleport(game.PlaceId, p)
+end)	
+
+	option:Slider("FOV",75,120,0, function(t)
+		local Cam = game.Workspace.CurrentCamera
+		Cam.FieldOfView = t
+	end)
+
+Notify({
+	Description = "Welcome to NIGHTMARE REWRITTEN";
+	Title = "Alert";
+	Duration = 3;
+	});
